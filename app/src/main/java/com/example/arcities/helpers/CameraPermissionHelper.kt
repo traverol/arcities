@@ -1,4 +1,4 @@
-package com.example.arcities
+package com.example.arcities.helpers
 
 import android.Manifest
 import android.content.Context

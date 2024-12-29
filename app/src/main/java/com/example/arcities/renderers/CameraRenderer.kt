@@ -1,4 +1,4 @@
-package com.example.arcities
+package com.example.arcities.renderers
 
 import android.opengl.GLES11Ext
 import android.opengl.GLES20
@@ -82,21 +82,22 @@ public class CameraRenderer {
                 "uniform samplerExternalOES texture;\n" +
                 "varying vec2 texCoordVarying;\n" +
                 "void main() {\n" +
-                "    gl_FragColor = texture2D(texture, texCoordVarying);\n" +
+                "    vec2 rotatedCoord  = vec2(texCoordVarying.y, 1.0 - texCoordVarying.x);\n" +
+                "    gl_FragColor = texture2D(texture, rotatedCoord);\n" +
                 "}"
 
         private val QUAD_COORDS = floatArrayOf(
-            1.0f, 1.0f,  // bottom left
-            1.0f, -1.0f,  // bottom right
-            -1.0f, 1.0f,  // top left
-            -1.0f, -1.0f,  // top right
+            -1f, -1f,  // bottom left
+            1f, -1f,  // bottom right
+            -1f, 1f,  // top left
+            1f, 1f   // top right
         )
 
         private val QUAD_TEXCOORDS = floatArrayOf(
-            0.0f, 0.0f,  // bottom left
-            1.0f, 0.0f,  // bottom right
-            0.0f, 1.0f,  // top left
-            1.0f, 1.0f,  // top right
+            0f, 1f,    // bottom left
+            1f, 1f,    // bottom right
+            0f, 0f,    // top left
+            1f, 0f     // top right
         )
     }
 }

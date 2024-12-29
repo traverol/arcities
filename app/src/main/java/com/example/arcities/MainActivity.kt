@@ -1,42 +1,51 @@
 package com.example.arcities
 
+import android.annotation.SuppressLint
 import android.opengl.GLSurfaceView
 import android.os.Bundle
+import android.util.Log
+import android.view.MotionEvent
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.google.ar.core.exceptions.*
-import javax.microedition.khronos.opengles.GL
+import com.example.arcities.helpers.CameraPermissionHelper
+import com.example.arcities.renderers.GLRenderer
 
 class MainActivity : AppCompatActivity() {
 
+    private val TAG = "MainActivity"
+
     private val cameraPermissionHelper = CameraPermissionHelper(this)
     private var arCoreSessionManager: ARCoreSessionManager? = null
-    private var surfaceView: GLSurfaceView? = null
+    private lateinit var surfaceView: GLSurfaceView
     private var renderer: GLRenderer? = null
 
-    //private lateinit var glSurfaceView: MYGLSurfaceView
-
+    @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d(TAG, "onCreate")
 
         arCoreSessionManager = ARCoreSessionManager(this)
-
+        renderer = GLRenderer(this@MainActivity)
         surfaceView = GLSurfaceView(this)
-        surfaceView!!.setPreserveEGLContextOnPause(true)
-        surfaceView!!.setEGLContextClientVersion(2)
-        //surfaceView!!.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
-
-        renderer = GLRenderer(this)
-        surfaceView!!.setRenderer(renderer)
-        surfaceView!!.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY)
+        surfaceView.preserveEGLContextOnPause = true
+        surfaceView.setEGLContextClientVersion(2)
+        surfaceView.setRenderer(renderer)
+        surfaceView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY)
         setContentView(surfaceView)
-        //glSurfaceView = MYGLSurfaceView(this, arCoreSessionManager!!)
-        //setContentView(glSurfaceView)
+    }
+
+    override fun onTouchEvent(event: MotionEvent?): Boolean {
+        event?.let {
+            if (it.action == MotionEvent.ACTION_UP) {
+                renderer?.onTap(it)
+            }
+        }
+        return super.onTouchEvent(event)
     }
 
     override fun onResume() {
         super.onResume()
-
+        Log.d(TAG, "onResume")
 
         if (!cameraPermissionHelper.hasCameraPermission()) {
             if (!cameraPermissionHelper.shouldShowRequestPermissionRationale()) {
@@ -48,15 +57,23 @@ class MainActivity : AppCompatActivity() {
                 ).show()
                 return
             }
+        } else {
+            startSession()
         }
+    }
 
+    private fun startSession() {
         arCoreSessionManager?.resumeSession()
+        if (arCoreSessionManager?.arSession == null) {
+            return
+        }
         renderer?.setSession(arCoreSessionManager!!.arSession!!)
-        surfaceView!!.onResume();
+        surfaceView.onResume();
     }
 
     override fun onPause() {
         super.onPause()
+        Log.d(TAG, "onPause")
         arCoreSessionManager?.pauseSession()
         surfaceView!!.onPause();
     }
@@ -64,14 +81,16 @@ class MainActivity : AppCompatActivity() {
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
-        grantResults: IntArray) {
+        grantResults: IntArray
+    ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        when(requestCode) {
+        when (requestCode) {
             CameraPermissionHelper.CAMERA_PERMISSION_REQUEST_CODE -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == 0) {
-                    //cameraPermissionHelper.setCameraPermission(true)
+                    Log.d(TAG, "Camera permission granted")
+                    startSession()
                 } else {
-                    // cameraPermissionHelper.setCameraPermission(false)
+                    Log.e(TAG, "Camera permission denied")
                 }
             }
         }
