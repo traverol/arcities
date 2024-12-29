@@ -32,24 +32,17 @@ AR Cities is an Android application that uses ARCore to create an augmented real
 The rendering system is built on OpenGL ES 2.0 and consists of several components:
 
 - Main GL renderer that coordinates all rendering activities
-- Specialized renderers for buildings, cars, and planes
 - Camera background rendering
-- Proper depth testing and blending for realistic 3D visualization
 
 ### Building Generation
 
-Buildings are procedurally generated with:
-
 - Random heights
 - Varied colors
-- Grid-based placement
 - Proper scaling and positioning relative to detected planes
 - Tracks and builds building for 5 detected planes
 - Uses anchors to anchor them to the world
 
 ### Car Placement System
-
-Features include:
 
 - Touch-based car placement
 - Multiple car colors
