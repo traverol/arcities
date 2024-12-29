@@ -1,6 +1,6 @@
 # AR Cities
 
-AR Cities is an Android application that uses ARCore to create an augmented reality city visualization experience. The app allows users to view 3D buildings and place cars in their real environment through their device's camera.
+AR Cities is an Android application that uses ARCore to create an augmented reality city. The app allows users to view 3D buildings and place cars in their real environment through their device's camera.
 
 ## Features
 
@@ -39,7 +39,7 @@ The rendering system is built on OpenGL ES 2.0 and consists of several component
 - Random heights
 - Varied colors
 - Proper scaling and positioning relative to detected planes
-- Tracks and builds building for 3 detected planes
+- Tracks and builds building for 5 detected planes
 
 ### Car Placement System
 
@@ -66,7 +66,9 @@ The rendering system is built on OpenGL ES 2.0 and consists of several component
 ## Limitations
 
 - Requires ARCore-compatible device
-- Buildings are currently static once placed
+- Buildings are placed when initial plane is detected
+- Buildings do not update as plane is updated
+- Buildings are spawned to 5 diff planes
 
 ## Known Issues
 
@@ -77,7 +79,6 @@ The rendering system is built on OpenGL ES 2.0 and consists of several component
 - Add Occlusion
 - Add lighting
 - Add Collisions between objects
-- Add Anchors for better positioning
 - Add Unit tests, were not added due to time constraint
 
 ## Contributing
@@ -91,3 +92,9 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 - Android documentation and examples
 - https://github.com/google-ar/arcore-android-sdk/tree/main/samples/hello_ar_java
 - https://github.com/googlecreativelab/ar-drawing-java/blob/master/app/src/main/java/com/googlecreativelab/drawar/rendering/LineUtils.java
+
+## Imgaes
+
+- ![image 1](/assets/image1.png)
+- ![image 2](/assets/image2.png)
+- ![image 3](/assets/image3.png)
