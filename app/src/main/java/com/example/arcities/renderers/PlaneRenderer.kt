@@ -55,19 +55,20 @@ class PlaneRenderer {
 
     fun onPlaneAdded(plane: Plane) {
         if (plane.type == Plane.Type.HORIZONTAL_UPWARD_FACING) {
-            val vertices = createSquareVertices(plane)
+            val vertices = createPlaneVertices(plane)
             planes[plane] = createVertexBuffer(vertices)
         }
     }
 
-    private fun createSquareVertices(plane: Plane): FloatArray {
-        val extent = Math.min(plane.extentX, plane.extentZ)
+    private fun createPlaneVertices(plane: Plane): FloatArray {
+        val halfExtentX = plane.extentX / 2.0f
+        val halfExtentZ = plane.extentZ / 2.0f
 
         return floatArrayOf(
-            -extent, 0.0f, -extent,  // bottom left
-            extent, 0.0f, -extent,  // bottom right
-            extent, 0.0f,  extent,  // top right
-            -extent, 0.0f,  extent  // top left
+            -halfExtentX, 0.0f, -halfExtentZ,  // bottom left
+            halfExtentX, 0.0f, -halfExtentZ,   // bottom right
+            halfExtentX, 0.0f, halfExtentZ,    // top right
+            -halfExtentX, 0.0f, halfExtentZ    // top left
         )
     }
 

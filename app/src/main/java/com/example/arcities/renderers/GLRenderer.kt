@@ -115,6 +115,7 @@ public class GLRenderer(private var context: Context) : GLSurfaceView.Renderer {
             cameraRenderer.draw()
 
             GLES20.glEnable(GLES20.GL_DEPTH_TEST)
+            //planeRenderer.drawPlane(viewMatrix, projectionMatrix)
             buildingRenderer.draw(viewMatrix, projectionMatrix)
             carRenderer.draw(viewMatrix, projectionMatrix)
 

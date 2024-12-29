@@ -11,7 +11,8 @@ import java.nio.FloatBuffer
 import kotlin.random.Random
 
 class BuildingRenderer {
-    private val MAX_PLANES = 3
+    private val MAX_PLANES = 5
+    private val BUILDINGS_PER_PLANE = 10
     private val program: Int
     private val positionHandle: Int
     private val mvpMatrixHandle: Int
@@ -29,7 +30,7 @@ class BuildingRenderer {
         val height: Float,
         val depth: Float,
         val color: FloatArray,
-        val pose: Pose  // Store pose directly instead of using anchor
+        val pose: Pose
     )
 
     init {
@@ -49,7 +50,7 @@ class BuildingRenderer {
     }
 
     private fun randomHeight(): Float {
-        return 0.3f + Math.random().toFloat() * 0.9f
+        return 0.2f + Math.random().toFloat() * 0.9f
     }
 
     private fun createBuildingsForPlane(plane: Plane) {
@@ -60,25 +61,18 @@ class BuildingRenderer {
 
         val buildingWidth = 0.08f
         val buildingDepth = 0.08f
-
         val buildingsForPlane = mutableListOf<Building>()
         val planePose = plane.centerPose
 
-        // Adjust these ranges to spread buildings more evenly
-        val xRange = 0.25f  // Wider spread left/right
-        val zRangeNear = -0.5f  // Closest to camera
-        val zRangeFar = 0.5f   // Farthest from camera
+        // Get plane boundaries, to draw buildings within
+        val extentX = plane.extentX
+        val extentZ = plane.extentZ
 
-        for (i in 0 until 10) {
-            // Generate x position across width
-            val x = (Random.nextFloat() * xRange - (xRange/2))
+        for (i in 0 until BUILDINGS_PER_PLANE) {
+            val x = (Random.nextFloat() - 0.5f) * extentX * 0.8f  // 80% of plane width
+            val z = (Random.nextFloat() - 0.5f) * extentZ * 0.8f  // 80% of plane length
 
-            // Generate z position biased towards camera view
-            // This ensures more buildings appear in visible area
-            val z = -(Random.nextFloat() * (zRangeFar - zRangeNear) + zRangeNear)
-
-
-            // Create pose for building directly
+            // Create pose relative to plane center
             val buildingPose = Pose(
                 floatArrayOf(
                     planePose.tx() + x,
@@ -88,17 +82,19 @@ class BuildingRenderer {
                 planePose.rotationQuaternion
             )
 
-            buildingsForPlane.add(
-                Building(
-                    x = x,
-                    z = z,
-                    width = buildingWidth,
-                    height = randomHeight(),
-                    depth = buildingDepth,
-                    color = randomColor(),
-                    pose = buildingPose
+            if (plane.isPoseInPolygon(buildingPose)) {
+                buildingsForPlane.add(
+                    Building(
+                        x = x,
+                        z = z,
+                        width = buildingWidth,
+                        height = randomHeight(),
+                        depth = buildingDepth,
+                        color = randomColor(),
+                        pose = buildingPose
+                    )
                 )
-            )
+            }
         }
 
         planeBuildings[plane] = buildingsForPlane
