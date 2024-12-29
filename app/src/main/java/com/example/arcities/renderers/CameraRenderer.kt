@@ -16,8 +16,6 @@ public class CameraRenderer {
     private val vertexBuffer: FloatBuffer
     private val texCoordBuffer: FloatBuffer
 
-    private val TAG = "CameraRenderer"
-
     init {
         // Initialize buffers
         vertexBuffer = ByteBuffer.allocateDirect(QUAD_COORDS.size * 4)
@@ -49,7 +47,7 @@ public class CameraRenderer {
         texCoordHandle = GLES20.glGetAttribLocation(program, "texCoord")
     }
 
-    fun draw(frame: Frame?) {
+    fun draw() {
         GLES20.glUseProgram(program)
 
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)

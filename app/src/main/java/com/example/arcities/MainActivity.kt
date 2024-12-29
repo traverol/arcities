@@ -12,7 +12,7 @@ import com.example.arcities.renderers.GLRenderer
 
 class MainActivity : AppCompatActivity() {
 
-    private val TAG = "MainActivity"
+    private val tag = "MainActivity"
 
     private val cameraPermissionHelper = CameraPermissionHelper(this)
     private var arCoreSessionManager: ARCoreSessionManager? = null
@@ -22,7 +22,7 @@ class MainActivity : AppCompatActivity() {
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d(TAG, "onCreate")
+        Log.d(tag, "onCreate")
 
         arCoreSessionManager = ARCoreSessionManager(this)
         renderer = GLRenderer(this@MainActivity)
@@ -45,7 +45,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        Log.d(TAG, "onResume")
+        Log.d(tag, "onResume")
 
         if (!cameraPermissionHelper.hasCameraPermission()) {
             if (!cameraPermissionHelper.shouldShowRequestPermissionRationale()) {
@@ -73,7 +73,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        Log.d(TAG, "onPause")
+        Log.d(tag, "onPause")
         arCoreSessionManager?.pauseSession()
         surfaceView!!.onPause();
     }
@@ -87,10 +87,10 @@ class MainActivity : AppCompatActivity() {
         when (requestCode) {
             CameraPermissionHelper.CAMERA_PERMISSION_REQUEST_CODE -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == 0) {
-                    Log.d(TAG, "Camera permission granted")
+                    Log.d(tag, "Camera permission granted")
                     startSession()
                 } else {
-                    Log.e(TAG, "Camera permission denied")
+                    Log.e(tag, "Camera permission denied")
                 }
             }
         }

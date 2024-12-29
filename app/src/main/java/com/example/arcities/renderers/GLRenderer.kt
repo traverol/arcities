@@ -107,11 +107,11 @@ public class GLRenderer(private var context: Context) : GLSurfaceView.Renderer {
 
             if (tap != null) {
                 Log.d(TAG, "Processing tap event")
-                handleTap(frame, camera, viewMatrix, projectionMatrix, tap)
+                handleTap(frame, camera, tap)
                 tap = null
             }
 
-            cameraRenderer.draw(frame)
+            cameraRenderer.draw()
 
             GLES20.glEnable(GLES20.GL_DEPTH_TEST)
             buildingRenderer.draw(viewMatrix, projectionMatrix)
@@ -129,7 +129,7 @@ public class GLRenderer(private var context: Context) : GLSurfaceView.Renderer {
         arSession = session
     }
 
-    private fun handleTap(frame: Frame, camera: Camera, viewMatrix: FloatArray, projectionMatrix: FloatArray, event: MotionEvent?) {
+    private fun handleTap(frame: Frame, camera: Camera, event: MotionEvent?) {
         if (event == null) {
             Log.w(TAG, "Tap event is null")
             return
