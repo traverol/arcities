@@ -2,6 +2,7 @@ package com.example.arcities.renderers
 
 import android.opengl.GLES20
 import android.opengl.Matrix
+import com.google.ar.core.Anchor
 import com.google.ar.core.Plane
 import com.google.ar.core.Pose
 import com.google.ar.core.TrackingState
@@ -19,9 +20,12 @@ class BuildingRenderer {
     private val colorHandle: Int
     private val mvpMatrix = FloatArray(16)
     private val vertexBuffer = createCubeVertices()
-    private var rotationAngle = 0f
-    private val rotationMatrix = FloatArray(16)
-    private val planeBuildings = mutableMapOf<Plane, MutableList<Building>>()
+    private val planeBuildings = mutableMapOf<Plane, MutableList<BuildingAnchor>>()
+
+    data class BuildingAnchor   (
+        val building: Building,
+        val anchor: Anchor
+    )
 
     data class Building(
         val x: Float,
@@ -50,7 +54,7 @@ class BuildingRenderer {
     }
 
     private fun randomHeight(): Float {
-        return 0.2f + Math.random().toFloat() * 0.9f
+        return 0.3f + Math.random().toFloat() * 0.8f
     }
 
     private fun createBuildingsForPlane(plane: Plane) {
@@ -61,16 +65,16 @@ class BuildingRenderer {
 
         val buildingWidth = 0.08f
         val buildingDepth = 0.08f
-        val buildingsForPlane = mutableListOf<Building>()
+        val buildingsForPlane = mutableListOf<BuildingAnchor>()
         val planePose = plane.centerPose
 
         // Get plane boundaries, to draw buildings within
-        val extentX = plane.extentX
-        val extentZ = plane.extentZ
+        val extentX = plane.extentX * 2.0f
+        val extentZ = plane.extentZ * 2.0f
 
         for (i in 0 until BUILDINGS_PER_PLANE) {
-            val x = (Random.nextFloat() - 0.2f) * extentX
-            val z = (Random.nextFloat() - 0.2f) * extentZ
+            val x = (Random.nextFloat() - 0.5f) * extentX
+            val z = (Random.nextFloat() - 0.5f) * extentZ
 
             // Create pose relative to plane center
             val buildingPose = Pose(
@@ -82,22 +86,22 @@ class BuildingRenderer {
                 planePose.rotationQuaternion
             )
 
-            if (plane.isPoseInPolygon(buildingPose)) {
-                buildingsForPlane.add(
-                    Building(
-                        x = x,
-                        z = z,
-                        width = buildingWidth,
-                        height = randomHeight(),
-                        depth = buildingDepth,
-                        color = randomColor(),
-                        pose = buildingPose
-                    )
-                )
-            }
+            val anchor = plane.createAnchor(buildingPose)
+            val building = Building(
+                x,
+                z,
+                buildingWidth,
+                randomHeight(),
+                buildingDepth,
+                randomColor(),
+                buildingPose
+            )
+
+            val buildingAnchor = BuildingAnchor(building, anchor)
+            buildingsForPlane.add(buildingAnchor)
+            planeBuildings[plane] = buildingsForPlane
         }
 
-        planeBuildings[plane] = buildingsForPlane
         processedPlanes.add(plane)
     }
 
@@ -170,16 +174,11 @@ class BuildingRenderer {
         GLES20.glEnable(GLES20.GL_BLEND)
         GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA)
 
-        planeBuildings.values.flatten().forEach { building ->
+        planeBuildings.values.flatten().forEach { anchorBuilding ->
             val modelMatrix = FloatArray(16)
-            building.pose.toMatrix(modelMatrix, 0)
+            anchorBuilding.anchor.pose.toMatrix(modelMatrix, 0)
 
-            Matrix.setIdentityM(rotationMatrix, 0)
-            Matrix.rotateM(rotationMatrix, 0, rotationAngle, 0f, 1f, 0f)
-
-            Matrix.multiplyMM(modelMatrix, 0, modelMatrix, 0, rotationMatrix, 0)
-            Matrix.translateM(modelMatrix, 0, building.x, 0f, building.z)
-            Matrix.scaleM(modelMatrix, 0, building.width, building.height, building.depth)
+            Matrix.scaleM(modelMatrix, 0, anchorBuilding.building.width, anchorBuilding.building.height, anchorBuilding.building.depth)
 
             Matrix.multiplyMM(mvpMatrix, 0, viewMatrix, 0, modelMatrix, 0)
             Matrix.multiplyMM(mvpMatrix, 0, projectionMatrix, 0, mvpMatrix, 0)
@@ -187,7 +186,7 @@ class BuildingRenderer {
             GLES20.glVertexAttribPointer(positionHandle, 3, GLES20.GL_FLOAT, false, 0, vertexBuffer)
             GLES20.glEnableVertexAttribArray(positionHandle)
             GLES20.glUniformMatrix4fv(mvpMatrixHandle, 1, false, mvpMatrix, 0)
-            GLES20.glUniform4fv(colorHandle, 1, building.color, 0)
+            GLES20.glUniform4fv(colorHandle, 1, anchorBuilding.building.color, 0)
 
             vertexBuffer.position(0)
             GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 24)

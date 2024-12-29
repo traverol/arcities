@@ -8,7 +8,6 @@ import android.view.MotionEvent
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.arcities.helpers.CameraPermissionHelper
-import com.example.arcities.renderers.CameraRenderer
 import com.example.arcities.renderers.GLRenderer
 
 class MainActivity : AppCompatActivity() {
@@ -19,6 +18,7 @@ class MainActivity : AppCompatActivity() {
     private var arCoreSessionManager: ARCoreSessionManager? = null
     private lateinit var surfaceView: GLSurfaceView
     private var renderer: GLRenderer? = null
+    private var isSessionStarted = false
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,7 +34,9 @@ class MainActivity : AppCompatActivity() {
         surfaceView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY)
         setContentView(surfaceView)
         if (cameraPermissionHelper.hasCameraPermission()) {
-            startSession()
+            if (!isSessionStarted) {
+                startSession()
+            }
         }
     }
 
@@ -61,10 +63,15 @@ class MainActivity : AppCompatActivity() {
                 ).show()
                 return
             }
+        } else {
+            if (!isSessionStarted) {
+                startSession()
+            }
         }
     }
 
     private fun startSession() {
+        isSessionStarted = true
         arCoreSessionManager?.resumeSession()
         if (arCoreSessionManager?.arSession == null) {
             return
@@ -75,6 +82,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
+        isSessionStarted = false
         Log.d(tag, "onPause")
         arCoreSessionManager?.pauseSession()
         surfaceView!!.onPause();

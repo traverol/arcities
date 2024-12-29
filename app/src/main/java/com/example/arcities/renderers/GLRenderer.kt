@@ -177,8 +177,12 @@ public class GLRenderer(private var context: Context) : GLSurfaceView.Renderer {
                 placeObjectAtTouchPosition(frame, event.x, event.y, screenWidth.toInt(), screenHeight.toInt())?.let { pose ->
                     withContext(Dispatchers.Main) {
                         Log.d(TAG, "Alternative placement successful at position: (${pose.tx()}, ${pose.ty()}, ${pose.tz()})")
-                        showToastMessage("car placed")
-                        carRenderer.placeCarAtHit(pose)
+                        val placed = carRenderer.placeCarAtHit(pose)
+                        if (placed) {
+                            showToastMessage("Car placed")
+                        } else {
+                            showToastMessage("Max cars reached")
+                        }
                     }
                 } ?: Log.w(TAG, "Failed to find valid placement position")
             }
