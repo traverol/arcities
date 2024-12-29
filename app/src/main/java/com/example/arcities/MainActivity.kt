@@ -32,6 +32,9 @@ class MainActivity : AppCompatActivity() {
         surfaceView.setRenderer(renderer)
         surfaceView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY)
         setContentView(surfaceView)
+        if (cameraPermissionHelper.hasCameraPermission()) {
+            startSession()
+        }
     }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
@@ -57,8 +60,6 @@ class MainActivity : AppCompatActivity() {
                 ).show()
                 return
             }
-        } else {
-            startSession()
         }
     }
 

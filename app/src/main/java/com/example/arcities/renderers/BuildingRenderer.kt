@@ -2,7 +2,6 @@ package com.example.arcities.renderers
 
 import android.opengl.GLES20
 import android.opengl.Matrix
-import com.google.ar.core.Anchor
 import com.google.ar.core.Plane
 import com.google.ar.core.Pose
 import com.google.ar.core.TrackingState
@@ -12,7 +11,7 @@ import java.nio.FloatBuffer
 import kotlin.random.Random
 
 class BuildingRenderer {
-    private val MAX_PLANES = 5
+    private val MAX_PLANES = 3
     private val program: Int
     private val positionHandle: Int
     private val mvpMatrixHandle: Int
@@ -21,13 +20,7 @@ class BuildingRenderer {
     private val vertexBuffer = createCubeVertices()
     private var rotationAngle = 0f
     private val rotationMatrix = FloatArray(16)
-    private val planeBuildings = mutableMapOf<Plane, MutableList<AnchoredBuilding>>()
-    private val processedPlanes = mutableSetOf<Plane>()
-
-    data class AnchoredBuilding(
-        val building: Building,
-        val anchor: Anchor
-    )
+    private val planeBuildings = mutableMapOf<Plane, MutableList<Building>>()
 
     data class Building(
         val x: Float,
@@ -35,7 +28,8 @@ class BuildingRenderer {
         val width: Float,
         val height: Float,
         val depth: Float,
-        val color: FloatArray
+        val color: FloatArray,
+        val pose: Pose  // Store pose directly instead of using anchor
     )
 
     init {
@@ -67,15 +61,25 @@ class BuildingRenderer {
         val buildingWidth = 0.08f
         val buildingDepth = 0.08f
 
-        val buildingsForPlane = mutableListOf<AnchoredBuilding>()
+        val buildingsForPlane = mutableListOf<Building>()
+        val planePose = plane.centerPose
 
-        for (i in 0 until 15) {
-            val x = (Random.nextFloat() * 2 - 1)
-            val z = (Random.nextFloat() * 2 - 1)
+        // Adjust these ranges to spread buildings more evenly
+        val xRange = 0.25f  // Wider spread left/right
+        val zRangeNear = -0.5f  // Closest to camera
+        val zRangeFar = 0.5f   // Farthest from camera
 
-            // Create pose for building anchor
-            val planePose = plane.centerPose
-            val pose = Pose(
+        for (i in 0 until 10) {
+            // Generate x position across width
+            val x = (Random.nextFloat() * xRange - (xRange/2))
+
+            // Generate z position biased towards camera view
+            // This ensures more buildings appear in visible area
+            val z = -(Random.nextFloat() * (zRangeFar - zRangeNear) + zRangeNear)
+
+
+            // Create pose for building directly
+            val buildingPose = Pose(
                 floatArrayOf(
                     planePose.tx() + x,
                     planePose.ty(),
@@ -83,17 +87,18 @@ class BuildingRenderer {
                 ),
                 planePose.rotationQuaternion
             )
-            val anchor = plane.createAnchor(pose)
-            val building = Building(
-                x = x,
-                z = z,
-                width = buildingWidth,
-                height = randomHeight(),
-                depth = buildingDepth,
-                color = randomColor()
-            )
 
-            buildingsForPlane.add(AnchoredBuilding(building, anchor))
+            buildingsForPlane.add(
+                Building(
+                    x = x,
+                    z = z,
+                    width = buildingWidth,
+                    height = randomHeight(),
+                    depth = buildingDepth,
+                    color = randomColor(),
+                    pose = buildingPose
+                )
+            )
         }
 
         planeBuildings[plane] = buildingsForPlane
@@ -149,14 +154,13 @@ class BuildingRenderer {
     }
 
     fun trackPlanes(planes: Collection<Plane>) {
-
         if (processedPlanes.size >= MAX_PLANES) {
             return
         }
 
         for (plane in planes) {
             if (processedPlanes.contains(plane)) {
-                return
+                continue
             }
             if (plane.trackingState == TrackingState.TRACKING) {
                 createBuildingsForPlane(plane)
@@ -170,11 +174,10 @@ class BuildingRenderer {
         GLES20.glEnable(GLES20.GL_BLEND)
         GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA)
 
-        planeBuildings.values.flatten().forEach { anchoredBuilding ->
+        planeBuildings.values.flatten().forEach { building ->
             val modelMatrix = FloatArray(16)
-            anchoredBuilding.anchor.pose.toMatrix(modelMatrix, 0)
+            building.pose.toMatrix(modelMatrix, 0)
 
-            val building = anchoredBuilding.building
             Matrix.setIdentityM(rotationMatrix, 0)
             Matrix.rotateM(rotationMatrix, 0, rotationAngle, 0f, 1f, 0f)
 
@@ -196,6 +199,9 @@ class BuildingRenderer {
     }
 
     companion object {
+
+        public val processedPlanes = mutableSetOf<Plane>()
+
         private const val VERTEX_SHADER = """
             uniform mat4 uMVPMatrix;
             attribute vec4 position;

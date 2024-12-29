@@ -18,11 +18,15 @@ import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 import kotlin.math.abs
 import kotlin.math.sqrt
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 public class GLRenderer(private var context: Context) : GLSurfaceView.Renderer {
     private lateinit var cameraRenderer: CameraRenderer
     private var arSession: Session? = null
-    private lateinit var planeRenderer: PlaneRenderer
+    //private lateinit var planeRenderer: PlaneRenderer
     private lateinit var buildingRenderer: BuildingRenderer
     private lateinit var carRenderer: CarRenderer
     private var buildingPlane: Plane? = null
@@ -54,14 +58,12 @@ public class GLRenderer(private var context: Context) : GLSurfaceView.Renderer {
         try {
             Log.d(TAG, "Initializing renderers")
             cameraRenderer = CameraRenderer()
-            planeRenderer = PlaneRenderer()
+            //planeRenderer = PlaneRenderer()
             buildingRenderer = BuildingRenderer()
             carRenderer = CarRenderer()
 
-            if (arSession != null) {
-                arSession?.setCameraTextureName(cameraRenderer.textureId)
-            }
 
+            arSession?.setCameraTextureName(cameraRenderer.textureId)
 
         } catch (e: Exception) {
             Log.e(TAG, "Failed to create renderers", e)
@@ -95,7 +97,7 @@ public class GLRenderer(private var context: Context) : GLSurfaceView.Renderer {
             val planes = arSession?.getAllTrackables<Plane>(Plane::class.java)!!
             Log.v(TAG, "Found ${planes.size} trackable planes")
 
-            planeRenderer.trackingPlanes(planes)
+            //planeRenderer.trackingPlanes(planes)
             buildingRenderer.trackPlanes(planes)
 
             if (buildingPlane == null) {
@@ -169,17 +171,26 @@ public class GLRenderer(private var context: Context) : GLSurfaceView.Renderer {
             }
         } else {
             Log.d(TAG, "No valid hit result, attempting alternative placement")
-            placeObjectAtTouchPosition(frame, event.x, event.y, screenWidth.toInt(), screenHeight.toInt())?.let { pose ->
-                Log.d(TAG, "Alternative placement successful at position: (${pose.tx()}, ${pose.ty()}, ${pose.tz()})")
-                showToastMessage("car placed")
-                carRenderer.placeCarAtHit(pose)
-            } ?: Log.w(TAG, "Failed to find valid placement position")
+            CoroutineScope(Dispatchers.Default).launch {
+                placeObjectAtTouchPosition(frame, event.x, event.y, screenWidth.toInt(), screenHeight.toInt())?.let { pose ->
+                    withContext(Dispatchers.Main) {
+                        Log.d(TAG, "Alternative placement successful at position: (${pose.tx()}, ${pose.ty()}, ${pose.tz()})")
+                        showToastMessage("car placed")
+                        carRenderer.placeCarAtHit(pose)
+                    }
+                } ?: Log.w(TAG, "Failed to find valid placement position")
+            }
         }
     }
 
     //https://github.com/googlecreativelab/ar-drawing-java/blob/master/app/src/main/java/com/googlecreativelab/drawar/rendering/LineUtils.java
-    private fun placeObjectAtTouchPosition(frame: Frame, x: Float, y: Float, width: Int, height: Int): Pose? {
+    private suspend fun placeObjectAtTouchPosition(frame: Frame, x: Float, y: Float, width: Int, height: Int): Pose? {
         Log.d(TAG, "Attempting to place object at touch position: ($x, $y)")
+
+        if (BuildingRenderer.processedPlanes.isEmpty()) {
+            Log.w(TAG, "No processed planes available for object placement")
+            return null
+        }
 
         val camera = frame.camera
         val viewMatrix = FloatArray(16)
@@ -228,7 +239,8 @@ public class GLRenderer(private var context: Context) : GLSurfaceView.Renderer {
         rayDirection[1] /= length
         rayDirection[2] /= length
 
-        val planes = frame.getUpdatedTrackables(Plane::class.java)
+        // we only check for interaction between processed planes.
+        val planes = BuildingRenderer.processedPlanes
         Log.d(TAG, "Checking intersection with ${planes.size} planes")
 
         for (plane in planes) {
