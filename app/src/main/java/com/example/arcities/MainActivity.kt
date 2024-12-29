@@ -69,10 +69,6 @@ class MainActivity : AppCompatActivity() {
         if (arCoreSessionManager?.arSession == null) {
             return
         }
-        if (CameraRenderer.textureId != -1) {
-            arCoreSessionManager?.arSession?.setCameraTextureName(CameraRenderer.textureId)
-        }
-
         renderer?.setSession(arCoreSessionManager!!.arSession!!)
         surfaceView.onResume();
     }

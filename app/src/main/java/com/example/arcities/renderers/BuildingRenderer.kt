@@ -69,8 +69,8 @@ class BuildingRenderer {
         val extentZ = plane.extentZ
 
         for (i in 0 until BUILDINGS_PER_PLANE) {
-            val x = (Random.nextFloat() - 0.5f) * extentX * 0.8f  // 80% of plane width
-            val z = (Random.nextFloat() - 0.5f) * extentZ * 0.8f  // 80% of plane length
+            val x = (Random.nextFloat() - 0.2f) * extentX
+            val z = (Random.nextFloat() - 0.2f) * extentZ
 
             // Create pose relative to plane center
             val buildingPose = Pose(

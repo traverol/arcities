@@ -62,8 +62,6 @@ public class GLRenderer(private var context: Context) : GLSurfaceView.Renderer {
             buildingRenderer = BuildingRenderer()
             carRenderer = CarRenderer()
 
-            arSession?.setCameraTextureName(CameraRenderer.textureId)
-
         } catch (e: Exception) {
             Log.e(TAG, "Failed to create renderers", e)
             throw RuntimeException("Surface creation failed", e)
@@ -80,8 +78,10 @@ public class GLRenderer(private var context: Context) : GLSurfaceView.Renderer {
         GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT or GLES20.GL_COLOR_BUFFER_BIT)
 
         try {
+            arSession?.setCameraTextureName(CameraRenderer.textureId)
             val frame = arSession?.update()!!
             val camera = frame.camera
+
 
             if (camera.trackingState != TrackingState.TRACKING) {
                 Log.w(TAG, "Camera not tracking. Current state: ${camera.trackingState}")
@@ -118,6 +118,8 @@ public class GLRenderer(private var context: Context) : GLSurfaceView.Renderer {
             //planeRenderer.drawPlane(viewMatrix, projectionMatrix)
             buildingRenderer.draw(viewMatrix, projectionMatrix)
             carRenderer.draw(viewMatrix, projectionMatrix)
+
+            frame.acquireCameraImage().close()
 
         } catch (e: Exception) {
             Log.e(TAG, "Exception on the OpenGL thread", e)
