@@ -9,7 +9,7 @@ import java.nio.FloatBuffer
 
 
 public class CameraRenderer {
-    val textureId: Int
+
     private val program: Int
     private val positionHandle: Int
     private val texCoordHandle: Int
@@ -67,6 +67,7 @@ public class CameraRenderer {
     }
 
     companion object {
+        var textureId: Int = -1
         private const val VERTEX_SHADER = "attribute vec4 position;\n" +
                 "attribute vec2 texCoord;\n" +
                 "varying vec2 texCoordVarying;\n" +

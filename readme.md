@@ -39,15 +39,13 @@ The rendering system is built on OpenGL ES 2.0 and consists of several component
 - Random heights
 - Varied colors
 - Proper scaling and positioning relative to detected planes
-- Tracks and builds building for 5 detected planes
-- Uses anchors to anchor them to the world
+- Tracks and builds building for 3 detected planes
 
 ### Car Placement System
 
 - Touch-based car placement
 - Multiple car colors
 - Maximum car limit 20
-- Proper perspective and scaling
 
 ## Setup Instructions
 
@@ -67,18 +65,20 @@ The rendering system is built on OpenGL ES 2.0 and consists of several component
 
 ## Limitations
 
-- Only supports horizontal plane detection
-- Maximum of 20 cars can be placed
 - Requires ARCore-compatible device
 - Buildings are currently static once placed
-- Hittest in ARCore not working, added a workaround
+
+## Known Issues
+
+- ArCore Hittest unreliable, falls back on own ray casting to place cars
 
 ## Future Improvements
 
 - Add Occlusion
 - Add lighting
 - Add Collisions between objects
-- Add Car animations
+- Add Anchors for better positioning
+- Add Unit tests, were not added due to time constraint
 
 ## Contributing
 

@@ -62,8 +62,7 @@ public class GLRenderer(private var context: Context) : GLSurfaceView.Renderer {
             buildingRenderer = BuildingRenderer()
             carRenderer = CarRenderer()
 
-
-            arSession?.setCameraTextureName(cameraRenderer.textureId)
+            arSession?.setCameraTextureName(CameraRenderer.textureId)
 
         } catch (e: Exception) {
             Log.e(TAG, "Failed to create renderers", e)

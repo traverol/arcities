@@ -8,6 +8,7 @@ import android.view.MotionEvent
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.arcities.helpers.CameraPermissionHelper
+import com.example.arcities.renderers.CameraRenderer
 import com.example.arcities.renderers.GLRenderer
 
 class MainActivity : AppCompatActivity() {
@@ -68,6 +69,10 @@ class MainActivity : AppCompatActivity() {
         if (arCoreSessionManager?.arSession == null) {
             return
         }
+        if (CameraRenderer.textureId != -1) {
+            arCoreSessionManager?.arSession?.setCameraTextureName(CameraRenderer.textureId)
+        }
+
         renderer?.setSession(arCoreSessionManager!!.arSession!!)
         surfaceView.onResume();
     }
