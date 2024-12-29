@@ -27,7 +27,7 @@ class ARCoreSessionManager(private val context: Context) {
         }
     }
 
-    fun InitializeSession(): Boolean {
+    private fun InitializeSession(): Boolean {
         Log.i(tag, "Initializing ARCore session")
         return try {
             val installStatus = ArCoreApk.getInstance().requestInstall(context as Activity?, true)
@@ -78,15 +78,7 @@ class ARCoreSessionManager(private val context: Context) {
 
             Log.e(tag, errorMessage, e)
             showToast(errorMessage)
-
-            when (e) {
-                is UnavailableUserDeclinedInstallationException,
-                is UnavailableArcoreNotInstalledException,
-                is UnavailableDeviceNotCompatibleException,
-                is UnavailableSdkTooOldException,
-                is UnavailableApkTooOldException -> false
-                else -> throw e
-            }
+            throw e
         }
     }
 

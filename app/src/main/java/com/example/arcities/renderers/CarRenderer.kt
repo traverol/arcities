@@ -36,7 +36,7 @@ class CarRenderer {
     }
 
     private fun createCubeVertices(): FloatBuffer {
-        val size = 0.03f  // 5cm cube
+        val size = 0.03f
 
         val vertices = floatArrayOf(
             // Front

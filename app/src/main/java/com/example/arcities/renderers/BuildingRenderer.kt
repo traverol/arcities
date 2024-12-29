@@ -68,7 +68,6 @@ class BuildingRenderer {
         val buildingsForPlane = mutableListOf<BuildingAnchor>()
         val planePose = plane.centerPose
 
-        // Get plane boundaries, to draw buildings within
         val extentX = plane.extentX * 2.0f
         val extentZ = plane.extentZ * 2.0f
 
@@ -76,7 +75,6 @@ class BuildingRenderer {
             val x = (Random.nextFloat() - 0.5f) * extentX
             val z = (Random.nextFloat() - 0.5f) * extentZ
 
-            // Create pose relative to plane center
             val buildingPose = Pose(
                 floatArrayOf(
                     planePose.tx() + x,

@@ -285,14 +285,6 @@ public class GLRenderer(private var context: Context) : GLSurfaceView.Renderer {
     companion object {
         private const val TAG = "GLRenderer"
 
-        fun checkGLError(tag: String?, label: String) {
-            var error: Int
-            while ((GLES20.glGetError().also { error = it }) != GLES20.GL_NO_ERROR) {
-                Log.e(tag, "$label: glError $error")
-                throw RuntimeException("$label: glError $error")
-            }
-        }
-
         fun loadShader(type: Int, shaderCode: String): Int {
             Log.v(TAG, "Loading shader of type: $type")
             val shader = GLES20.glCreateShader(type)
